@@ -1,3 +1,5 @@
+
+from . import schemas
 from sqlalchemy.orm import Session
 from . database import engine, get_db
 from . import models
@@ -5,7 +7,7 @@ import time
 from psycopg2.extras import RealDictCursor
 import psycopg2
 from random import randrange
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
 # both Body class works same (findings till now)
 # from fastapi import Body
@@ -15,14 +17,6 @@ from fastapi import FastAPI, Response, status, HTTPException, Depends
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-class Post(BaseModel):
-    title: str
-    content: str
-    # If the user does not provide published value the default will be True
-    published: bool = True
-    # rating: Optional[int] = None  # Optional with default None
-
 
 while True:
     try:
@@ -40,53 +34,32 @@ while True:
         time.sleep(5)
 
 
-my_posts = [
-    {
-        'id': 1,
-        'title': 'title of post 1',
-        'content': 'content of post 1'
-    },
-    {
-        'id': 2,
-        'title': 'my favorite foods',
-        'content': 'i love pizza'
-    }
-]
+# def find_post(id):
+#     for post in my_posts:
+#         if post['id'] == id:
+#             return post
 
 
-def find_post(id):
-    for post in my_posts:
-        if post['id'] == id:
-            return post
-
-
-def find_index_post(id):
-    for i, post in enumerate(my_posts):
-        if post['id'] == id:
-            return i
+# def find_index_post(id):
+#     for i, post in enumerate(my_posts):
+#         if post['id'] == id:
+#             return i
 
 
 @app.get("/")
 def root():
     return {"message": "Hello World, this is my api"}
 
-@app.get("/sqlalchemy")
-def test_db(db: Session = Depends(get_db)):
-    posts = db.query(models.Post).all()
-    # print(type(posts))
-    # print(posts[0].title)
-    return {'data': posts}
-
-@app.get("/posts")
+@app.get("/posts", response_model=List[schemas.Post])
 def get_posts(db :Session = Depends(get_db)):
     # cursor.execute("""SELECT * FROM posts ORDER BY id DESC;""")
     # posts = cursor.fetchall()
     posts = db.query(models.Post).all()
-    return {"data": posts}
+    return posts
 
 
 # when there could be multiple type of status
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=schemas.Post)
 def get_post(id: int, response: Response, db: Session = Depends(get_db)):
     # cursor.execute("""SELECT * FROM posts where id = %s """, (str(id), ))
     # cursor.execute("""SELECT * FROM posts where id = %(id)s """, {'id': id})
@@ -102,7 +75,7 @@ def get_post(id: int, response: Response, db: Session = Depends(get_db)):
                             detail=f'Post with id: {id} was not found')
         # response.status_code = status.HTTP_404_NOT_FOUND
         # return {'message': f'Post with id {d} was not found'}
-    return {'data': post}
+    return post
 
 
 """
@@ -119,8 +92,8 @@ def create_posts(payload: dict = Body(...)):
 
 
 # when there is only one success status code
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_posts(post: Post, db: Session = Depends(get_db)):
+@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
+def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     '''
     the pydantic (schema model) Post class will validate the data sent by user via HTTP Body.
     It will look for the defined attributes and defined type attributes
@@ -149,7 +122,7 @@ def create_posts(post: Post, db: Session = Depends(get_db)):
     db.add(new_post) # adding new data to the db
     db.commit() # commiting
     db.refresh(new_post) # Returning or getting back the newly added data
-    return {"data": new_post}
+    return new_post
 
 
 @app.delete('/posts/{id}', status_code=status.HTTP_204_NO_CONTENT)
@@ -178,8 +151,8 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.put('/posts/{id}')
-def update_post(id: int, post: Post, db: Session = Depends(get_db)):
+@app.put('/posts/{id}', response_model=schemas.Post)
+def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)):
     # cursor.execute(""" UPDATE posts SET title = %s, content = %s, published = %s where id = %s returning * """,
     #                (post.title, post.content, post.published, str(id)))
     # updated_post = cursor.fetchone()
@@ -199,4 +172,4 @@ def update_post(id: int, post: Post, db: Session = Depends(get_db)):
     # post_dict = post.dict()
     # post_dict['id'] = id
     # my_posts[index] = post_dict
-    return {'data': updated_post}
+    return updated_post
