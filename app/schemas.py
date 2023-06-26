@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
 class PostBase(BaseModel):
@@ -19,6 +19,19 @@ class Post(PostBase):
         orm_mode = True
     '''
     since we will use this pydantic model to return response.
-    but in our case our respose is a sqlalchemy model but pydantic model expects a dictionary,
+    but in our case our response is a sqlalchemy model but pydantic model expects a dictionary,
     that why we added `orm_mode=True` in the meta `Config` class
     '''
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        orm_mode=True
