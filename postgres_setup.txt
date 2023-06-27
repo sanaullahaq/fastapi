@@ -1,0 +1,9 @@
+- intall posgres using the script provided [https://www.postgresql.org/download/linux/ubuntu/] here
+- install pgadmin-desktop using the script provided [https://www.pgadmin.org/download/pgadmin-4-apt/] here
+- exectute <sudo -u postgres psql> and then <ALTER USER postgres WITH PASSWORD 'new_password';> in the terminal, this will set the password for user postgres
+- to setup a server open pgadminGUI
+	- enter server name [ex:Local Posgres]
+	- enter host [ex: localhost, for local server...]
+	- enter port [ex: 5432, this is the default port...]
+	- enter password for user and turn on save password
+- click save, if everything goes fine, server should be started...
