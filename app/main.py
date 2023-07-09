@@ -13,7 +13,7 @@ from pydantic import BaseModel
 # from fastapi import Body
 from fastapi.params import Body
 from fastapi import FastAPI, Response, status, HTTPException, Depends
-from . routers import posts, users
+from . routers import posts, users, auth
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -48,6 +48,7 @@ app.include_router(posts.router)
 # this includes the `path-operations` lives in `routers/posts.py file` using object `router` of type `APIRouter`
 app.include_router(users.router)
 # this includes the `path-operations` lives in `routers/users.py file` using object `router` of type `APIRouter`
+app.include_router(auth.router)
 
 @app.get("/")
 def root():
