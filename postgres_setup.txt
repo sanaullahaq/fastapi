@@ -1,3 +1,4 @@
+***Ubuntu***
 - intall posgres using the script provided [https://www.postgresql.org/download/linux/ubuntu/] here
 - install pgadmin-desktop using the script provided [https://www.pgadmin.org/download/pgadmin-4-apt/] here
 - exectute <sudo -u postgres psql> and then <ALTER USER postgres WITH PASSWORD 'new_password';> in the terminal, this will set the password for user postgres
@@ -7,3 +8,14 @@
 	- enter port [ex: 5432, this is the default port...]
 	- enter password for user and turn on save password
 - click save, if everything goes fine, server should be started...
+- create a database [ex: fastapi]
+
+***WIndows***
+1) download and install postgresql from [https://www.postgresql.org/download/windows/] [remember the user password]
+2) to setup a server open pgadminGUI
+	2.1) enter server name [ex:Local Posgres]
+	2.2) enter host [ex: localhost, for local server...]
+	2.3) enter port [ex: 5432, this is the default port...]
+	2.4) enter password [you have set in step 1] ] for user and turn on save password
+3) click save, if everything goes fine, server should be started...
+4) create a database [ex: fastapi]
