@@ -1,1 +1,3 @@
-uvicorn app.main:app --reload
+uvicorn dotted.path.to.where.FastAPI().instance.has.been.created:<fast_api_instance>
+ex: uvicorn app.main:app --reload
+params: --reload is to reload the server after anychange
