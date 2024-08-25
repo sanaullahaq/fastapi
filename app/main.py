@@ -22,7 +22,7 @@ while True:
 								password='12345',
 								cursor_factory=RealDictCursor)
 		cursor = conn.cursor()
-		print('***---***Database connection was successful***---***')
+		print("--------------------------------------\n| Database connection was successful |\n--------------------------------------")
 		break
 	except Exception as error:
 		print('Connecting to Database failed!')
