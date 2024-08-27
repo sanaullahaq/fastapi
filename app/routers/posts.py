@@ -22,6 +22,8 @@ def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.
 	"""
 	# cursor.execute("""SELECT * FROM posts ORDER BY id DESC;""")
 	# posts = cursor.fetchall()
+	# posts = db.query(models.Post).filter(models.Post.owner_id==current_user.id).all()
+	# Above query will only return the Posts of the current user
 	posts = db.query(models.Post).all()
 	return posts
 
@@ -46,6 +48,12 @@ def get_post(id: int, response: Response, db: Session = Depends(get_db), current
 							detail=f'Post with id: {id} was not found')
 		# response.status_code = status.HTTP_404_NOT_FOUND
 		# return {'message': f'Post with id {d} was not found'}
+
+	# if post.owner_id != current_user.id:
+	# 	raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+	# 				  		detail="Not authorised to perfom the requestd action")
+	# #will return the post if and only if the user is the owener of that post
+	
 	return post
 
 
