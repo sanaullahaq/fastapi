@@ -44,5 +44,11 @@ def get_current_user(token: str = Depends(oauth2_schema), db: Session = Depends(
 									   headers={"WWW-Authenticate": "Bearer"})
 	token = verify_access_token(token, credentials_exception)
 	# print('token: ', token)
+
+	"""
+	We can directly call 'verify_access_token()' rather call it from 'get_current_user()',
+	The moto is that we after calling 'verify_access_token()' we will get the token, and
+	using the token we'll fetch the user from the db, and can have the user and apply necessary logic.
+	"""
 	
 	return db.query(models.User).filter(models.User.id == token.id).first()

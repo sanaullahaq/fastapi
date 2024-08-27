@@ -95,8 +95,8 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), curren
 	# new_post = models.Post(**post.dict()) # unpacking the dictionary, same as above
 
 	print(current_user.email)
-
-	new_post = models.Post(**post.model_dump()) # unpacking the dictionary, same as above
+	new_post = models.Post(owner_id=current_user.id, **post.model_dump()) # unpacking the dictionary, same as above
+	#as the 'PostCreate' schema does not contain 'owner_id' we are setting the 'owner_id' outside of the schema from 'current_user'
 	db.add(new_post) # adding new data to the db
 	db.commit() # commiting
 	db.refresh(new_post) # Returning or getting back the newly added data
@@ -115,13 +115,18 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depe
 	# index = find_index_post(id)
 
 	post_query = db.query(models.Post).filter(models.Post.id == id) #getting the query only
+	# print('post_query', type(post_query))
+	# print('post_query.first()', post_query.first())
 
 	if post_query.first() == None: # getting the first result from the query
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
 							detail=f'Post with id: {id} does not exist')
-	else:
-		post_query.delete(synchronize_session=False)
-		db.commit()
+
+	if post_query.first().owner_id != current_user.id:
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+					  		detail="Not authorised to perfom the requestd action")
+	post_query.delete(synchronize_session=False)
+	db.commit()
 	# my_posts.pop(index)
 
 	'''
@@ -148,11 +153,15 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
 	if post_query.first() == None: # getting the first result from the query
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
 							detail=f'Post with id: {id} does not exist')
-	else:
-		# post_query.update(post.dict(), synchronize_session=False)
-		post_query.update(post.model_dump(), synchronize_session=False)
-		db.commit()
-		updated_post = post_query.first() #getting the updated post from the query
+	
+	if post_query.first().owner_id != current_user.id:
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+						detail="Not authorised to perfom the requestd action")
+
+	# post_query.update(post.dict(), synchronize_session=False)
+	post_query.update(post.model_dump(), synchronize_session=False)
+	db.commit()
+	updated_post = post_query.first() #getting the updated post from the query
 
 	# post_dict = post.dict()
 	# post_dict['id'] = id

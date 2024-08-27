@@ -25,6 +25,9 @@ class PostCreate(PostBase):
 class Post(PostBase):
 	id: int
 	created_at: datetime
+	owner_id: int		#this field can be added to the 'PostBase' schema as well, but adding here is more efficient
+						#In case of PostCreate it is not efficient that user will provide his own id(owner_id) while creating a post
+						#While creating post owner_id is being fetched from the token
 
 	class Config:
 		# orm_mode = True
