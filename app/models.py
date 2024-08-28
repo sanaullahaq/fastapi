@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from . database import Base
@@ -12,6 +13,10 @@ class Post(Base):
 	created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 	owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 	#									__tablename__.field
+	owner = relationship("User")
+	#setting relationship is not mandatory for ForeignKey, it will not take any effect to the DB as well.
+	#setting the relationship will also fetch the data based on the schema by itself 
+
 
 
 class User(Base):
