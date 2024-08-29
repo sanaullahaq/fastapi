@@ -181,3 +181,13 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
 	# post_dict['id'] = id
 	# my_posts[index] = post_dict
 	return updated_post
+
+# def find_post(id):
+#     for post in my_posts:
+#         if post['id'] == id:
+#             return post
+
+# def find_index_post(id):
+#     for i, post in enumerate(my_posts):
+#         if post['id'] == id:
+#             return i

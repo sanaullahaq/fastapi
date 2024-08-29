@@ -14,3 +14,27 @@ def get_db():
 		yield db
 	finally:
 		db.close()
+
+
+
+"""
+Psycopg – PostgreSQL database adapter for Python,
+But psycopg does not return the column name, so to get the column name we set 'cursor_factory=RealDictCursor'
+"""
+# import time
+# from psycopg2.extras import RealDictCursor
+# import psycopg2
+# while True:
+# 	try:
+# 		conn = psycopg2.connect(host='localhost',
+# 								database='fastapi',
+# 								user='postgres',
+# 								password='12345',
+# 								cursor_factory=RealDictCursor)
+# 		cursor = conn.cursor()
+# 		print("--------------------------------------\n| Database connection was successful |\n--------------------------------------")
+# 		break
+# 	except Exception as error:
+# 		print('Connecting to Database failed!')
+# 		print('Error: ', error)
+# 		time.sleep(5)			#try again after 5 seconds
