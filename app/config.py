@@ -16,6 +16,7 @@ Most important this class will make sure that all the OS env variables are set e
 ***In the development we can use the .env file rather setting the variables in the OS environment.
 ***But in the production we have to set the variables in OS environment
 """
+
 class Settings(BaseSettings):
     database_hostname: str
     database_port: str
@@ -26,13 +27,10 @@ class Settings(BaseSettings):
     algorithm: str
     access_token_expire_minutes: int
 
+    #as in the dev server we not storing the env variables direct in the OS env,
+    #rather storing in the .env file, so telling pydantic to import env variables from .env file
+    class Config:
+        env_file = ".env"
+
 
 settings = Settings()
-
-
-
-
-
-# BaseSettings class lives in pydantic_settings,
-# Need to install pip install pydantic-settings
-# to import from pydantic_settings import BaseSettings

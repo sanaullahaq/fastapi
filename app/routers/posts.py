@@ -108,7 +108,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), curren
 	# new_post = models.Post(title=post.title, content=post.content, published=post.published)
 	# new_post = models.Post(**post.dict()) # unpacking the dictionary, same as above
 
-	print(current_user.email)
+	# print(current_user.email)
 	new_post = models.Post(owner_id=current_user.id, **post.model_dump()) # unpacking the dictionary, same as above
 	#as the 'PostCreate' schema does not contain 'owner_id' we are setting the 'owner_id' outside of the schema from 'current_user'
 	db.add(new_post) # adding new data to the db
