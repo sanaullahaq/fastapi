@@ -1,7 +1,7 @@
 from . database import engine
 from . import models
 from fastapi import FastAPI
-from . routers import posts, users, auth
+from . routers import posts, users, auth, votes
 from . config import settings
 
 models.Base.metadata.create_all(bind=engine)
@@ -16,6 +16,8 @@ app.include_router(users.router)
 # this includes the path-operations lives in 'routers/users.py' file using object 'router' of type 'APIRouter'
 
 app.include_router(auth.router)
+
+app.include_router(votes.router)
 
 @app.get("/")
 def root():

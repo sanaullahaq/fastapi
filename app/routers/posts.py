@@ -5,6 +5,7 @@
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from .. import models, schemas
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from .. database import get_db
 from typing import List, Optional
 from .. import oauth2
@@ -15,7 +16,8 @@ router = APIRouter(
 )
 # this router connects path-operations lives in this file with main.py
 
-@router.get("/", response_model=List[schemas.Post])
+# @router.get("/", response_model=List[schemas.Post])
+@router.get("/")
 def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 2, search: Optional[str]=""):
 	"""
 	'current_user: int = Depends(oauth2.get_current_user)' will make sure the user is logged in and will return the 'user_id'
@@ -31,7 +33,12 @@ def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.
 	#after offset if number of available posts is more/equal to limit, then it will return the limit number of post
 	#after offset if number of available posts is less then limit, then returned number of post will be (limit-offset)
 	#limit and skip mechanism is related to pagination
-	return posts
+
+	results = db.query(models.Post, func.count(models.Vote.post_id).label('votes')).join(models.Vote, models.Post.id == models.Vote.post_id, isouter=True).group_by(models.Post.id).all()
+	print('\n',results,'\n')
+	# return posts
+	return {'res': results}
+
 
 
 # when there could be multiple type of status
