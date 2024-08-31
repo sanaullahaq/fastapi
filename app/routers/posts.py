@@ -17,7 +17,8 @@ router = APIRouter(
 # this router connects path-operations lives in this file with main.py
 
 # @router.get("/", response_model=List[schemas.Post])
-@router.get("/")
+@router.get("/", response_model=List[schemas.PostOut])
+# @router.get("/")
 def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 2, search: Optional[str]=""):
 	"""
 	'current_user: int = Depends(oauth2.get_current_user)' will make sure the user is logged in and will return the 'user_id'
@@ -26,7 +27,10 @@ def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.
 	# posts = cursor.fetchall()
 	# posts = db.query(models.Post).filter(models.Post.owner_id==current_user.id).all()
 	# Above query will only return the Posts of the current user
-	posts = db.query(models.Post).filter(models.Post.title.contains(search.lower())).limit(limit).offset(skip).all()
+	
+	# posts = db.query(models.Post).filter(models.Post.title.contains(search.lower())).limit(limit).offset(skip).all()
+	posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes')).join(models.Vote, models.Post.id == models.Vote.post_id, isouter=True).group_by(models.Post.id).order_by(models.Post.id).all()
+	
 	#insert '%20' instead of 'space' if you wish to include 'space' in your search string, cause api url cannot contains space directly
 	#limit: number of posts will be returned
 	#offset: number of posts from the begining to skip
@@ -34,10 +38,7 @@ def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.
 	#after offset if number of available posts is less then limit, then returned number of post will be (limit-offset)
 	#limit and skip mechanism is related to pagination
 
-	results = db.query(models.Post, func.count(models.Vote.post_id).label('votes')).join(models.Vote, models.Post.id == models.Vote.post_id, isouter=True).group_by(models.Post.id).all()
-	print('\n',results,'\n')
-	# return posts
-	return {'res': results}
+	return posts
 
 
 

@@ -44,12 +44,13 @@ class Post(PostBase):
 		# orm_mode = True
 		from_attributes = True
 
-class PostOut(PostBase):
+class PostOut(BaseModel):
 	Post: Post
-	vote: int
+	votes: int
 
 	class Config:
-		from_attributes = True
+		# from_attributes = True
+		orm_mode = True
 
 class UserCreate(BaseModel):
 	email: EmailStr
