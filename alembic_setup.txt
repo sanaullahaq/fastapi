@@ -20,3 +20,10 @@
             )
 
             -the setting object contains the env variables
+
+---Thats all for setup Alembic---
+   ---To work with Alembic---
+-create a revision run:`alembic revision -m "create posts table"`, similar git commit
+-and implement `upgrade()` and `downgrade()` function as required.
+-to run `upgrade()` or `downgrade()` from the revision file run: `alembic upgrade <revision_no.>` or `alembic downgrade <revision_no.>`
+-add as many revision as you need to modify/build you db tables step by step.
