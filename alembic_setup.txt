@@ -1,0 +1,22 @@
+1- run: pip install alembic
+    -stop the server if running, remove all the existing tables from the database
+2- run: alembic init <folder_name>
+    -folder_name: where the alembic script directory will be created
+    -goto folder_name->env.py
+        -import 'Base' object. So that alembic can access our models classes.
+            -example: from app.models import Base
+        -set target_metadata = None -> target_metadata = Base.metadata
+    -goto alembic.ini
+        -set 'sqlalchemy.url' there
+            -however this will required the hardcoded values, 
+            -so we will leave it, as it is and will set 'sqlalchemy.url' in the 'env.py' file
+            -follow instruction below
+    -goto env.py file
+        -set 'sqlalchemy.url' with
+            
+            from app.config import settings
+            config.set_main_option(
+                "sqlalchemy.url", f'postgres+psycopg2://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
+            )
+
+            -the setting object contains the env variables

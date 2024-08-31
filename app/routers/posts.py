@@ -18,7 +18,6 @@ router = APIRouter(
 
 # @router.get("/", response_model=List[schemas.Post])
 @router.get("/", response_model=List[schemas.PostOut])
-# @router.get("/")
 def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 2, search: Optional[str]=""):
 	"""
 	'current_user: int = Depends(oauth2.get_current_user)' will make sure the user is logged in and will return the 'user_id'
@@ -29,7 +28,22 @@ def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.
 	# Above query will only return the Posts of the current user
 	
 	# posts = db.query(models.Post).filter(models.Post.title.contains(search.lower())).limit(limit).offset(skip).all()
-	posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes')).join(models.Vote, models.Post.id == models.Vote.post_id, isouter=True).group_by(models.Post.id).order_by(models.Post.id).all()
+	posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes'))\
+					.join(models.Vote, models.Post.id == models.Vote.post_id, isouter=True)\
+					.group_by(models.Post.id)\
+					.filter(models.Post.title.contains(search.lower()))\
+					.order_by(models.Post.id)\
+					.limit(limit).offset(skip)\
+					.all()
+	
+	#print the query w/o '.all()' to see the generated sql query
+	#the 'LEFT Join' by default is 'LEFT Inner Join' in SQLAlchemy, so we need to set 'isouter=True'
+	#cause we need the 'LEFT Outer Join' for our query
+	"""
+	select posts.*, count(votes.post_id) as votes from posts LEFT JOIN votes on posts.id = votes.post_id
+	group by posts.id
+	order by id asc (copied from pgAdmin)
+	"""
 	
 	#insert '%20' instead of 'space' if you wish to include 'space' in your search string, cause api url cannot contains space directly
 	#limit: number of posts will be returned
@@ -43,7 +57,8 @@ def get_posts(db :Session = Depends(get_db), current_user: int = Depends(oauth2.
 
 
 # when there could be multiple type of status
-@router.get("/{id}", response_model=schemas.Post)
+# @router.get("/{id}", response_model=schemas.Post)
+@router.get("/{id}", response_model=schemas.PostOut)
 def get_post(id: int, response: Response, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 	"""
 	'current_user: int = Depends(oauth2.get_current_user)' will make sure the user is logged in and will return the 'user_id'
@@ -52,9 +67,14 @@ def get_post(id: int, response: Response, db: Session = Depends(get_db), current
 	# cursor.execute("""SELECT * FROM posts where id = %(id)s """, {'id': id})
 	# post = cursor.fetchone()
 
-	post = db.query(models.Post).filter(models.Post.id == id).first()
+	# post = db.query(models.Post).filter(models.Post.id == id).first()
 	#add .first() at the end to successfully execute the query and since we are expecting only one result
 
+	post = db.query(models.Post, func.count(models.Vote.post_id).label('votes'))\
+					.join(models.Vote, models.Post.id == models.Vote.post_id, isouter=True)\
+					.group_by(models.Post.id)\
+					.filter(models.Post.id ==id)\
+					.first()
 	# post = find_post(id)
 
 	if not post:
