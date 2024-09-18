@@ -1,0 +1,121 @@
+***Setup Ubuntu VM***
+    - Setup your Ubuntu OS in the VM
+    - Update packages
+
+***Install Postgresql***
+    - sudo apt install postgresql postgresql-contrib    
+    - set password for user `postgres`
+        - login to Postgresql run `psql -U postgres`
+        - run `\password <username>` ex: `postgres` in the psql console and enter password
+
+***Connect pgAdmin From(HostMaching - Windows) to Postgresql (VM OS Ubuntu)***
+    Before connecting we need to make necessary changes to the following files.
+    `cd /etc/postgresql/16/main` and edit below configuration files.
+
+    - postgresql.conf
+        - add `listen_addresses = '*'` line under `CONNECTIONS AND AUTHENTICATION`
+        - comment out `listen_addresses = 'localhost'` with `#`
+        - thiw will make postgresql to listen to all address
+
+    - pg_hba.conf
+        - goto at the very bottom
+        - edit METHOD of "local" from `peer` to `md5`
+            - allowing remote connection.
+        - edit ADDRESS of "IPV4" from `localhost` to `0.0.0.0/0` and METHOD to `md5`
+            - allowing remote connection from any IPV4 address.
+        - edit ADDRESS of "IPV6" from `::1/128` to `::/0`
+            - allowing remote connection from any IPV6 address.
+            (incase of IPV6 maybe METHOD should be changed to `md5` as well)
+        - After this steps scenerio should be like below
+
+        # TYPE  DATABASE        USER            ADDRESS                 METHOD
+        # "local" is for Unix domain socket connections only
+        local   all             all                                     md5
+        # IPv4 local connections:
+        host    all             all             0.0.0.0/0               md5
+        #host    all             all             localhost               scram-sha-256
+        # IPv6 local connections:
+        host    all             all             ::/0                    scram-sha-256
+        #host    all             all             ::1/128                  scram-sha-256
+
+    - restart `postgresql` service with `sudo systemctl restart postgresql`
+
+    - Now pgAdmin can be connected with:
+        host: localhost
+        port: 5432
+        user: postgres
+        password: xxxxx
+
+***Setup FastAPI***
+    - sudo apt install pip3
+    - pip install pyhton3.xx-venv
+    - create folder /home/sanau/fastapi/src
+    - create virtualenv under fastapi folder
+    - git clone code under src with `git clone <remote repo> .`
+        - tailing dot(.) will copy the content in the current folder skipping the repo name.
+    - activate env and install necessary libraries from requirement.txt file.
+    - setup db tables with `alembic upgrade head`
+        - verify that tables are made in the pgAdmin
+    - setup env variables
+        - create a `.env` file in /home/sanau/ directory put all the variables in the file.
+        - put the `set -o allexport; source /home/sanau/.env; set +o allexport` cmd at the very bottom `.profile` lives in the home directory
+        - this will makesure everytime the system start/reboot/restart/ or new session of the user starts the variables are set.
+        - run `printenv` to make sure all the variables are set as env variables
+    - run `uvicorn --host 0.0.0.0 app.main:app`
+        - check from HostMaching - Windows in browser with (localhost:8000)
+        - port forwarding may required
+
+--------------------------------------------------------------------------
+| Till this step everything is ready just manual server start is required|
+--------------------------------------------------------------------------
+|  To setup auto start of the server with multiple workers, follow below |
+--------------------------------------------------------------------------
+
+***Setup Gunicorn***
+- run `gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000`
+    - start the server with 4 workers and on any address with port 8000
+    - verify workers with `ps -aef | grep -i gunicorn`
+
+
+***Setup Systemd Service***
+    To start the gunicorn everytime when system start/reboot/restart/ we need to create our own service
+    - cd /etc/systemd/system
+    - create a service file, ex: fastapi.service.
+        - dump below stuffs into the file
+
+            [Unit]
+            # Description of the service
+            Description=Demo Service to run FastAPI in the background
+            # Specifies that the service should start after the network is available
+            After=network.target
+
+            [Service]
+            # The user under which the service will run
+            User=sanau
+            # The group under which the service will run
+            Group=sanau
+            # The working directory for the service
+            WorkingDirectory=/home/sanau/fastapi/src
+            # Set the environment PATH variable to include the virtual environment's bin directory
+            Environment="PATH=/home/sanau/fastapi/env/bin"
+            # Load additional environment variables from a file
+            EnvironmentFile=/home/sanau/.env
+            # Command to start the FastAPI application using Gunicorn with 4 workers
+            ExecStart=/home/sanau/fastapi/env/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+
+            [Install]
+            # Specifies that the service should be started in multi-user mode
+            WantedBy=multi-user.target
+
+    - run `sudo systemctl start fastapi.service` to start the service.
+        - if everything goes fine the service should be started
+    - run `sudo systemctl status fastapi.service` to see the status of the service.
+        - at this point there will be a `disabled` flag with the status of the service
+            that means it will not start automatically after each system start/reboot/restart/
+            to run the service automatically follow below step.
+    - run `sudo systemctl enable fastapi.service` check service status, the `disabled` flag should turned into `enabled`
+
+
+-------------------------------
+|With This we are good to gooo|
+-------------------------------

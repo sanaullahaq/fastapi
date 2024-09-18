@@ -1,0 +1,21 @@
+ufw - uncomplicated firewall
+- check firewall status
+    -  sudo ufw status
+        - should be inactive
+- set rule
+    - sudo ufw allow http
+        - to allow http traffic to the system
+    - sudo ufw allow https
+        - to allow https traffic to the system
+    - sudo ufw allow ssh
+        - to allow ssh connection to the system
+    - sudo ufw allow 5432
+        - to allow access db from outside of the system, which is a risky task, better not to allow 5432
+
+- activate the firewall
+    - sudo ufw enable
+    - sudo ufw status
+        - should be active, with showing the configured rules
+
+- delete rule
+    - sudo ufw delete allow 5432
