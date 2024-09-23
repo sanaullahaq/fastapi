@@ -27,6 +27,7 @@ services:
       # - DATABASE_HOSTNAME=localhost
       - DATABASE_HOSTNAME=postgres_service
       - DATABASE_PORT=5432
+      #db_password, db_name, db_usrname should be same as db enviroonment
       - DATABASE_PASSWORD=12345
       - DATABASE_NAME=fastapi
       - DATABASE_USERNAME=postgres
@@ -42,13 +43,10 @@ services:
     container_name: postgres_container
     #mandatory environment variable
     environment:
-      #This environment variable is required for you to use the PostgreSQL image. It must not be empty or undefined. This environment variable sets the superuser password for PostgreSQL. The default superuser is defined by the POSTGRES_USER environment variable.
-      #Note 1: The PostgreSQL image sets up trust authentication locally so you may notice a password is not required when connecting from localhost (inside the same container). However, a password will be required if connecting from a different host/container.
-      #Note 2: This variable defines the superuser password in the PostgreSQL instance, as set by the initdb script during initial container startup. It has no effect on the PGPASSWORD environment variable that may be used by the psql client at runtime, as described at https://www.postgresql.org/docs/14/libpq-envars.html⁠. PGPASSWORD, if used, will be specified as a separate environment variable.
-      #more-info: https://hub.docker.com/_/postgres#:~:text=on%20container%20startup.-,POSTGRES_PASSWORD,-This%20environment%20variable
-      - POSTGRES_USER = postgres
+      #setting postgres_password is mandatory, rest are optional
       - POSTGRES_PASSWORD=12345
       - POSTGRES_DB=fastapi
+      - POSTGRES_USER = postgres
 
     ports:
       - 5432:5432
@@ -62,3 +60,5 @@ services:
 #this global volume refering to the `named volume` above, so that any other container can access the inside this volume
 volumes:
   postgres-db:
+
+#update docker.txt based on this .yml file

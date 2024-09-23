@@ -24,16 +24,13 @@
     CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 - create a file .dockerignore
-- insert the below codes into dockerignore
+- insert the below codes into dockerignore file, add more if needed, based on the project.
     __pycache__
-    *.pyc
-    *.pyo
-    *.pyd
-    .Python
     env/
-    venv/
-    pip-log-txt
-    .idea
+    .env
+    Dockerfile
+    .dockerignore
+    .pytest_cache
 
 - run: `docker build -t fastapi .` to build the docker image
     - -t <tags: string>, example: fastapi
@@ -54,22 +51,71 @@
 
 - create docker-compose.yml file
 - insert the below codes into docker-compose.yml
+    # Define and run multi-container applications with Docker
     # version of docker compose file
-    version: '3.8'
+    # version: '3.8'
 
-    # each service will spin a container. more container need to spin, more service need to add
+    # each service will spin a container. need to spin more containers , more service need to be added
     services:
     #container name. ex: fastapi_service
     fastapi_service:
         #path to docker file, which will be used to build the image
         #we can point to a already build image as well here.
         build: .
-        #outsider cannt talk to the container directly, so we are opening our localhost port and forwarding to the containet port.
+        container_name: fastapi_container
+        #outsider cannot talk to the container directly, so we are opening our localhost port and forwarding to the containet port.
         #bascially we saying to docker if we receive any traffic <port on localhost> will be forwarded to <port on container>
         #ex: <port on localhost>:<port on container>
         #http://localhost:<port on localhost>: port specified on the `Dockerfile` to run the application, in our case both are `8000`
         ports:
         - 8000:8000
+        
+        # Setting the env variable from file or list down, we are going with list down here.
+        # env_file:
+        #   - ./.env
+        environment:
+        #Docker creates its own network to communicate between its containers(services).
+        #In our case we need to set the `IP to DB_HOSTNAME`, we can look for the `postgres_service` IP and set it to here.
+        #Alternative way is just put the `service_name` docker will figure the IP itself.
+        # - DATABASE_HOSTNAME=localhost
+        - DATABASE_HOSTNAME=postgres_service
+        - DATABASE_PORT=5432
+        #db_password, db_name, db_usrname should be same as db enviroonment
+        - DATABASE_PASSWORD=12345
+        - DATABASE_NAME=fastapi
+        - DATABASE_USERNAME=postgres
+        - SECRET_KEY=09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
+        - ALGORITHM=HS256
+        - ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+
+    #another service to run postgres instance a container
+    postgres_service:
+        # offcial image name
+        image: postgres
+        container_name: postgres_container
+        #mandatory environment variable
+        environment:
+        #setting postgres_password is mandatory, rest are optional
+        - POSTGRES_PASSWORD=12345
+        - POSTGRES_DB=fastapi
+        - POSTGRES_USER = postgres
+
+        ports:
+        - 5432:5432
+
+        #when a containers goes down, db datas are also gone. To store and fetch db data after a shutdown and again restart
+        #we can use a `named volume`, as depicted below
+        #db-name:<path to data store>
+        volumes:
+        - postgres-db:/var/lib/postgresql/data
+
+    #this global volume refering to the `named volume` above, so that any other container can access the inside this volume
+    volumes:
+    postgres-db:
+
+    #update docker.txt based on this .yml file
+
 - run: `docker-compose up -d` to run the container.
     - -d, --detach Detached mode: Run containers in the background
     - the naming systax will be <working-directory-name_service-name_serial-no>
@@ -79,5 +125,20 @@
     and docker image already existed. Cause `docker-compose` cannot detec change.
     `--build` flag will build images before starting containers
 
-- run: `docker logs <container_id>` to view its log
+- run: `docker logs <container_id> or <container_name>` to view its log
 - run: `docker ps -a` to List all containers
+
+- run: `docker-compose down` to shutdown the service/container
+
+- run: `docker-compose down -v` to shutdown the service/container along volumes.
+    this is important when you have a DB volume, and need to delete the volume and need to recreate.
+    for example a DB volume is created and dont know what was the actual env variables when the db has created.
+    cause you have changed env variables frequently for experiment purpose.
+    so drop the volume and recreate again.
+
+- after docker setup you need to setup DB tables.
+    - open the terminal of fastapi service container, you can use docker desktop to open a terminal of specific service
+    - cd to working directory.
+    - run: `alembic upgrade head`, job is done.
+
+- from now dont shutdown containers with `-v` flag, else you have to recreate the DB tables.
