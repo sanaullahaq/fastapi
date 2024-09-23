@@ -1,0 +1,83 @@
+- create a file Dockerfile
+- insert the below codes into Dockerfile
+    # In a Docker file each step is called a layer
+    # Use the official Python image from the Docker Hub
+    FROM python:3.12.5
+
+    # Set the working directory in the container
+    WORKDIR /usr/src/app
+
+    # Copy the requirements.txt file into the container [this is a file thats why './']
+    # This is used to copy a specific file (req.txt) to the container.
+    # It's often done early in the Dockerfile to leverage Docker's caching mechanism.
+    # If req.txt hasn't changed, Docker can use the cache for subsequent steps, speeding up the build process.
+
+    COPY req.txt ./
+
+    # Install the dependencies specified in the requirements file
+    RUN pip install --no-cache-dir -r req.txt
+
+    # Copy the rest of the application code into the container [this is a directory thats why '.']
+    COPY . .
+
+    # Specify the command to run the application
+    CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+- create a file .dockerignore
+- insert the below codes into dockerignore
+    __pycache__
+    *.pyc
+    *.pyo
+    *.pyd
+    .Python
+    env/
+    venv/
+    pip-log-txt
+    .idea
+
+- run: `docker build -t fastapi .` to build the docker image
+    - -t <tags: string>, example: fastapi
+    - . <Use the necessary docker files from the current directory>
+
+- run `docker image ls` to see the list of latest build images
+
+--------------------------------------------------------------------------------------
+| Define and run multi-container applications with Docker                            |
+| docker compose will automatically spin up/down our container with one cmd          |
+--------------------------------------------------------------------------------------
+| docker-compose.yml file will set up the necessary services and handle dependencies.|
+--------------------------------------------------------------------------------------
+| this is an alternative of docker run command, all the flags taken by run command   |
+| can be set in the compose file, everytime we run compose file we do not need to set|
+| the flags, all will be taken from the compose file. Follow the below steps.        |
+--------------------------------------------------------------------------------------
+
+- create docker-compose.yml file
+- insert the below codes into docker-compose.yml
+    # version of docker compose file
+    version: '3.8'
+
+    # each service will spin a container. more container need to spin, more service need to add
+    services:
+    #container name. ex: fastapi_service
+    fastapi_service:
+        #path to docker file, which will be used to build the image
+        #we can point to a already build image as well here.
+        build: .
+        #outsider cannt talk to the container directly, so we are opening our localhost port and forwarding to the containet port.
+        #bascially we saying to docker if we receive any traffic <port on localhost> will be forwarded to <port on container>
+        #ex: <port on localhost>:<port on container>
+        #http://localhost:<port on localhost>: port specified on the `Dockerfile` to run the application, in our case both are `8000`
+        ports:
+        - 8000:8000
+- run: `docker-compose up -d` to run the container.
+    - -d, --detach Detached mode: Run containers in the background
+    - the naming systax will be <working-directory-name_service-name_serial-no>
+    - dont use `-d` tag if you want to run the container in the cmd.
+
+- run: `docker-compose up --build -d`: if you have any changes in the project
+    and docker image already existed. Cause `docker-compose` cannot detec change.
+    `--build` flag will build images before starting containers
+
+- run: `docker logs <container_id>` to view its log
+- run: `docker ps -a` to List all containers

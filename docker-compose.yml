@@ -1,0 +1,64 @@
+# Define and run multi-container applications with Docker
+# version of docker compose file
+# version: '3.8'
+
+# each service will spin a container. need to spin more containers , more service need to be added
+services:
+  #container name. ex: fastapi_service
+  fastapi_service:
+    #path to docker file, which will be used to build the image
+    #we can point to a already build image as well here.
+    build: .
+    container_name: fastapi_container
+    #outsider cannot talk to the container directly, so we are opening our localhost port and forwarding to the containet port.
+    #bascially we saying to docker if we receive any traffic <port on localhost> will be forwarded to <port on container>
+    #ex: <port on localhost>:<port on container>
+    #http://localhost:<port on localhost>: port specified on the `Dockerfile` to run the application, in our case both are `8000`
+    ports:
+      - 8000:8000
+    
+    # Setting the env variable from file or list down, we are going with list down here.
+    # env_file:
+    #   - ./.env
+    environment:
+      #Docker creates its own network to communicate between its containers(services).
+      #In our case we need to set the `IP to DB_HOSTNAME`, we can look for the `postgres_service` IP and set it to here.
+      #Alternative way is just put the `service_name` docker will figure the IP itself.
+      # - DATABASE_HOSTNAME=localhost
+      - DATABASE_HOSTNAME=postgres_service
+      - DATABASE_PORT=5432
+      - DATABASE_PASSWORD=12345
+      - DATABASE_NAME=fastapi
+      - DATABASE_USERNAME=postgres
+      - SECRET_KEY=09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+
+  #another service to run postgres instance a container
+  postgres_service:
+    # offcial image name
+    image: postgres
+    container_name: postgres_container
+    #mandatory environment variable
+    environment:
+      #This environment variable is required for you to use the PostgreSQL image. It must not be empty or undefined. This environment variable sets the superuser password for PostgreSQL. The default superuser is defined by the POSTGRES_USER environment variable.
+      #Note 1: The PostgreSQL image sets up trust authentication locally so you may notice a password is not required when connecting from localhost (inside the same container). However, a password will be required if connecting from a different host/container.
+      #Note 2: This variable defines the superuser password in the PostgreSQL instance, as set by the initdb script during initial container startup. It has no effect on the PGPASSWORD environment variable that may be used by the psql client at runtime, as described at https://www.postgresql.org/docs/14/libpq-envars.html⁠. PGPASSWORD, if used, will be specified as a separate environment variable.
+      #more-info: https://hub.docker.com/_/postgres#:~:text=on%20container%20startup.-,POSTGRES_PASSWORD,-This%20environment%20variable
+      - POSTGRES_USER = postgres
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=fastapi
+
+    ports:
+      - 5432:5432
+
+    #when a containers goes down, db datas are also gone. To store and fetch db data after a shutdown and again restart
+    #we can use a `named volume`, as depicted below
+    #db-name:<path to data store>
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+#this global volume refering to the `named volume` above, so that any other container can access the inside this volume
+volumes:
+  postgres-db:

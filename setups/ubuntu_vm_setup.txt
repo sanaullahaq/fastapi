@@ -3,7 +3,7 @@
     - Update packages
 
 ***Install Postgresql***
-    - sudo apt install postgresql postgresql-contrib    
+    - sudo apt install postgresql postgresql-contrib
     - set password for user `postgres`
         - login to Postgresql run `psql -U postgres`
         - run `\password <username>` ex: `postgres` in the psql console and enter password
