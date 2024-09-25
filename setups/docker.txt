@@ -78,6 +78,7 @@
         # Consistency: Ensures the container environment matches the host setup.
         # basically this hold your code and will keep looking for changes and will instantly sync changes w/o image rebuild
         # this volume will be kept for container restart
+        # this is a `bind mount` volume
         volumes:
         - ./:/usr/src/app
         
