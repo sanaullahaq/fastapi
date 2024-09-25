@@ -44,7 +44,8 @@
         host: localhost
         port: 5432
         user: postgres
-        password: xxxxx
+        password: xxxx
+        - you may need to stop postgres instance running in the Host machine(if any) or else you may got connected to the host machine instance.
 
 ***Setup FastAPI***
     - sudo apt install pip3

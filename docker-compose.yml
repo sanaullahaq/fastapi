@@ -16,6 +16,17 @@ services:
     #http://localhost:<port on localhost>: port specified on the `Dockerfile` to run the application, in our case both are `8000`
     ports:
       - 8000:8000
+
+    # The volumes directive in Docker Compose is used to mount directories from the host machine into Docker containers,
+    # allowing file access and synchronization between the host and container.
+    # ./:/usr/src/app: This mounts the ./ directory (where the compose file lives) from the host to /usr/src/app in the container.
+    # Efficiency: Immediate reflection of code changes without rebuilding.
+    # Data Management: Persistent data storage across container lifecycles.
+    # Consistency: Ensures the container environment matches the host setup.
+    # basically this hold your code and will keep looking for changes and will instantly sync changes w/o image rebuild
+    # this volume will be kept for container restart
+    volumes:
+      - ./:/usr/src/app
     
     # Setting the env variable from file or list down, we are going with list down here.
     # env_file:
@@ -34,6 +45,31 @@ services:
       - SECRET_KEY=09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+    # as we are using volume for this service and so, to refelect the changes we made in the development environment
+    # to be effective in the container w/o rebuild the image we are using the below cmd with `--reload` flag
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    #This service will start after <postgres_service>
+    depends_on:
+      - postgres_service
+
+  # """if you want a pgAdmin to inspect in your DB instance from the browser you can build the below container.
+  # visit localhost:5050 to connect pgadmin from browser, use credentials from environment to login.
+  # put <postgres_service> as host.
+  # or if you want to inspect from Host Machine pgAdmin Desktop app you do not need this service
+  # but you may need to stop postgres instance running in the Host machine or else you may got connected to the host machine instance
+  # you will be able to use localhost as host in the pgadmin."""
+  
+  # pgadmin_service:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pgadmin_container
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - postgres_service
 
 
   #another service to run postgres instance a container
@@ -60,5 +96,3 @@ services:
 #this global volume refering to the `named volume` above, so that any other container can access the inside this volume
 volumes:
   postgres-db:
-
-#update docker.txt based on this .yml file
