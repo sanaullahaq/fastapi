@@ -216,3 +216,38 @@
 - inspect DB instance from Host Machine pgAdmin Desktop app you do not need to build/add above service/container
     but you may need to stop postgres instance running in the Host machine(if any) or else you may got connected to the host machine instance,
     you will be able to use localhost as host in the pgadmin.
+
+------------------------------------
+|docker-compose file for DEV & PROD|
+------------------------------------
+In this stage of the project we are done with docker with last one step left that is:
+clone `docker-compose.yml` file into two different file:
+    - `docker-compose-dev.yml`  -> for development purpose
+    - `docker-compose-prod.yml` -> for production purpose
+
+- run: `docker-compose -f docker-compose-xxx.yml <regular-docker-compose-command>` to run docker compose
+    command if your docker compose file does not contains the regular naming convention
+    - `-f`: flag stands for `file`
+    - ex: `docker-compose -f docker-compose-dev.yml up -d`
+
+- `docker-compose-dev.yml` is our regular `docker-compose.yml` file we have developed till now
+- `docker-compose-prod.yml` is our regular `docker-compose.yml` with few changes can be
+    seen if you open the file.
+    - we are no longer building images for our container, rather we have pushed our builded image in the docker
+        dockerhub repo and pulling that image in the production.
+        - dockerhub repo works as github repo for docker images.
+    - removed hardcoded env variables and implemented mechanism to fetch env variables from the host machine.
+    - removed `bind mount` volume, as do not need sync host directory with production container
+    - removed removed `--reload` for fastapi_service not to look for changes.
+
+---------------------------------
+|Docker image push to docker-hub|
+---------------------------------
+- run: `docker-login` to login into docker from cmd. If you are logged in into the docker desktop you should be logged in instantly
+- docker image name need to be same as docker-hub repo name. ex: <dockerhub-usrname/repo-name>
+    - this can be set while building the docker image, which is not a commonly used practice.
+    - so we will Tag our Docker image (if not done during build): If our image is already built but not tagged,
+        you can tag it manually:
+        - run: `docker tag existing-image-id yourusername/yourimagename:tag`
+            - providing <:tag> value is optional, default will be optional
+        - run: `docker push yourusername/yourimagename:tag`. job will be done.

@@ -61,16 +61,16 @@ services:
   # but you may need to stop postgres instance running in the Host machine or else you may got connected to the host machine instance
   # you will be able to use localhost as host in the pgadmin."""
   
-  # pgadmin_service:
-  #   image: dpage/pgadmin4:latest
-  #   container_name: pgadmin_container
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: admin@example.com
-  #     PGADMIN_DEFAULT_PASSWORD: admin
-  #   ports:
-  #     - "5050:80"
-  #   depends_on:
-  #     - postgres_service
+  pgadmin_service:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres_service
 
 
   #another service to run postgres instance a container
