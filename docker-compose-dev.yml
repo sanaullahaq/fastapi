@@ -9,6 +9,7 @@ services:
     #path to docker file, which will be used to build the image
     #we can point to a already build image as well here.
     build: .
+    # image: sanaullahaq/fastapi-prod
     container_name: fastapi_container
     #outsider cannot talk to the container directly, so we are opening our localhost port and forwarding to the containet port.
     #bascially we saying to docker if we receive any traffic <port on localhost> will be forwarded to <port on container>
@@ -26,8 +27,9 @@ services:
     # basically this hold your code and will keep looking for changes and will instantly sync changes w/o image rebuild
     # this volume will be kept for container restart
     # this is a `bind mount` volume
+    # ro: means read only
     volumes:
-      - ./:/usr/src/app
+      - ./:/usr/src/app:ro
     
     # Setting the env variable from file or list down, we are going with list down here.
     # env_file:
@@ -49,7 +51,11 @@ services:
 
     # as we are using volume for this service and so, to refelect the changes we made in the development environment
     # to be effective in the container w/o rebuild the image we are using the below cmd with `--reload` flag
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    
+    # command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    #run multi command
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     #This service will start after <postgres_service>
     depends_on:
       - postgres_service
@@ -61,16 +67,16 @@ services:
   # but you may need to stop postgres instance running in the Host machine or else you may got connected to the host machine instance
   # you will be able to use localhost as host in the pgadmin."""
   
-  pgadmin_service:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin_container
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres_service
+  # pgadmin_service:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pgadmin_container
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - postgres_service
 
 
   #another service to run postgres instance a container

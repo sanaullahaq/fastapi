@@ -31,6 +31,8 @@
     Dockerfile
     .dockerignore
     .pytest_cache
+    .mypy_cache
+    #add more if needed
 
 - run: `docker build -t fastapi .` to build the docker image
     - -t <tags: string>, example: fastapi
@@ -249,5 +251,9 @@ clone `docker-compose.yml` file into two different file:
     - so we will Tag our Docker image (if not done during build): If our image is already built but not tagged,
         you can tag it manually:
         - run: `docker tag existing-image-id yourusername/yourimagename:tag`
-            - providing <:tag> value is optional, default will be optional
-        - run: `docker push yourusername/yourimagename:tag`. job will be done.
+            - providing <:tag> value is optional, default will be `latest`
+        - run: `docker push yourusername/yourimagename:tag` and your job will be done.
+
+    - thus we will be able to use the docker image
+        - just inseatd of:
+        - `build .` use `image: sanaullahaq/fastapi-prod`

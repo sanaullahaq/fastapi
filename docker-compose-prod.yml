@@ -1,14 +1,15 @@
 services:
   fastapi_service:
     # build: .
-    image: imageName
+    image: sanaullahaq/fastapi-prod
     container_name: fastapi_container
     ports:
       - 80:8000
     # volumes:
-    #   - ./:/usr/src/app
+    #   - ./:/usr/src/app:ro
     environment:
-      - DATABASE_HOSTNAME=${DATABASE_HOSTNAME}
+      # - DATABASE_HOSTNAME=${DATABASE_HOSTNAME}
+      - DATABASE_HOSTNAME=postgres_service
       - DATABASE_PORT=${DATABASE_PORT}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_NAME=${DATABASE_NAME}
@@ -16,7 +17,9 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
-    # command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # command: >
+      # sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: alembic upgrade head
     depends_on:
       - postgres_service
 
@@ -25,8 +28,7 @@ services:
     container_name: postgres_container
     environment:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - POSTGRES_DB=
-      - DATABASE_USERN
+      - POSTGRES_DB=${DATABASE_NAME}
       - POSTGRES_USER = ${DATABASE_USERNAME}
     ports:
       - 5432:5432
