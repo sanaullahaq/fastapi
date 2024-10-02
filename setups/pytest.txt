@@ -1,0 +1,10 @@
+- run: `pip install pytest` to install the pytest library
+- run: `pytest` to execute the test. In this current state you will notice no tests ran. Which is obvious
+- create a folder where testing files will be lived. Ex: `tests` or anything you wish
+- add files with `test_*.py` or `*_test.py` naming convention if you wish to pytest will automatically
+    find the testing related files for you.
+- add functions with naming `test_*` or `testing_*` in the test_*.py` or `*_test.py` file for auto find by pytest
+- now run: `pytest` to execute the test.
+- run: `pytest` with flag `-v` for Increase verbosity. EX: `pytest -v`
+- run: `pytest` with flag `-s` for displaying the print statements inside the test functions.
+    EX: `pytest -s`

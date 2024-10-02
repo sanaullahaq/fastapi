@@ -3,5 +3,5 @@ env/
 .env
 Dockerfile
 .dockerignore
-.pytest_cache
 .mypy_cache
+.pytest_cache
