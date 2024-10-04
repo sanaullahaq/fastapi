@@ -1,7 +1,12 @@
-__pycache__
+__pycache__/
 env/
 .env
-Dockerfile
-.dockerignore
-.mypy_cache
-.pytest_cache
+.mypy_cache/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache/
+*.mypy_cache/
+setups/
+tests/

@@ -4,10 +4,11 @@ from fastapi import FastAPI
 from . routers import posts, users, auth, votes
 from . config import settings
 from fastapi.middleware.cors import CORSMiddleware
+
 """
 At the start-up of the program we are commanding `sqlalchemy` to create all the tables,
 Since at the current stage of the program we are usig `alembic` database migrations tool,
-We dont need this command, 
+We dont need this command,
 However we can keep this command, subject to `alembics` first revision will not going to do anything,
 As everything is already there.
 """

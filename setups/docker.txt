@@ -1,38 +1,10 @@
 - create a file Dockerfile
 - insert the below codes into Dockerfile
-    # In a Docker file each step is called a layer
-    # Use the official Python image from the Docker Hub
-    FROM python:3.12.5
-
-    # Set the working directory in the container
-    WORKDIR /usr/src/app
-
-    # Copy the requirements.txt file into the container [this is a file thats why './']
-    # This is used to copy a specific file (req.txt) to the container.
-    # It's often done early in the Dockerfile to leverage Docker's caching mechanism.
-    # If req.txt hasn't changed, Docker can use the cache for subsequent steps, speeding up the build process.
-
-    COPY req.txt ./
-
-    # Install the dependencies specified in the requirements file
-    RUN pip install --no-cache-dir -r req.txt
-
-    # Copy the rest of the application code into the container [this is a directory thats why '.']
-    COPY . .
-
-    # Specify the command to run the application
-    CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    <contents can be foound inside Dockerfile file>
 
 - create a file .dockerignore
 - insert the below codes into dockerignore file, add more if needed, based on the project.
-    __pycache__
-    env/
-    .env
-    Dockerfile
-    .dockerignore
-    .pytest_cache
-    .mypy_cache
-    #add more if needed
+    <contents can be foound inside .dockerignore file>
 
 - run: `docker build -t fastapi .` to build the docker image
     - -t <tags: string>, example: fastapi
@@ -53,104 +25,7 @@
 
 - create docker-compose.yml file
 - insert the below codes into docker-compose.yml
-    # Define and run multi-container applications with Docker
-    # version of docker compose file
-    # version: '3.8'
-
-    # each service will spin a container. need to spin more containers , more service need to be added
-    services:
-    #container name. ex: fastapi_service
-    fastapi_service:
-        #path to docker file, which will be used to build the image
-        #we can point to a already build image as well here.
-        build: .
-        container_name: fastapi_container
-        #outsider cannot talk to the container directly, so we are opening our localhost port and forwarding to the containet port.
-        #bascially we saying to docker if we receive any traffic <port on localhost> will be forwarded to <port on container>
-        #ex: <port on localhost>:<port on container>
-        #http://localhost:<port on localhost>: port specified on the `Dockerfile` to run the application, in our case both are `8000`
-        ports:
-        - 8000:8000
-
-        # The volumes directive in Docker Compose is used to mount directories from the host machine into Docker containers,
-        # allowing file access and synchronization between the host and container.
-        # ./:/usr/src/app: This mounts the ./ directory (where the compose file lives) from the host to /usr/src/app in the container.
-        # Efficiency: Immediate reflection of code changes without rebuilding.
-        # Data Management: Persistent data storage across container lifecycles.
-        # Consistency: Ensures the container environment matches the host setup.
-        # basically this hold your code and will keep looking for changes and will instantly sync changes w/o image rebuild
-        # this volume will be kept for container restart
-        # this is a `bind mount` volume
-        volumes:
-        - ./:/usr/src/app
-        
-        # Setting the env variable from file or list down, we are going with list down here.
-        # env_file:
-        #   - ./.env
-        environment:
-        #Docker creates its own network to communicate between its containers(services).
-        #In our case we need to set the `IP to DB_HOSTNAME`, we can look for the `postgres_service` IP and set it to here.
-        #Alternative way is just put the `service_name` docker will figure the IP itself.
-        # - DATABASE_HOSTNAME=localhost
-        - DATABASE_HOSTNAME=postgres_service
-        - DATABASE_PORT=5432
-        #db_password, db_name, db_usrname should be same as db enviroonment
-        - DATABASE_PASSWORD=12345
-        - DATABASE_NAME=fastapi
-        - DATABASE_USERNAME=postgres
-        - SECRET_KEY=09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
-        - ALGORITHM=HS256
-        - ACCESS_TOKEN_EXPIRE_MINUTES=60
-
-        # as we are using volume for this service and so, to refelect the changes we made in the development environment
-        # to be effective in the container w/o rebuild the image we are using the below cmd with `--reload` flag
-        command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-        #This service will start after <postgres_service>
-        depends_on:
-        - postgres_service
-
-    # if you want a pgAdmin to inspect in your DB instance from the browser you can build the below container.
-    # visit localhost:5050 to connect pgadmin from browser, use credentials from environment to login.
-    # put <postgres_service> as host.
-    # or if you want to inspect from Host Machine pgAdmin Desktop app you do not need this service
-    # but you may need to stop postgres instance running in the Host machine or else you may got connected to the host machine instance
-    # you will be able to use localhost as host in the pgadmin.
-    # pgadmin_service:
-    #   image: dpage/pgadmin4:latest
-    #   container_name: pgadmin_container
-    #   environment:
-    #     PGADMIN_DEFAULT_EMAIL: admin@example.com
-    #     PGADMIN_DEFAULT_PASSWORD: admin
-    #   ports:
-    #     - "5050:80"
-    #   depends_on:
-    #     - postgres_service
-
-
-    #another service to run postgres instance a container
-    postgres_service:
-        # offcial image name
-        image: postgres
-        container_name: postgres_container
-        #mandatory environment variable
-        environment:
-        #setting postgres_password is mandatory, rest are optional
-        - POSTGRES_PASSWORD=12345
-        - POSTGRES_DB=fastapi
-        - POSTGRES_USER = postgres
-
-        ports:
-        - 5432:5432
-
-        #when a containers goes down, db datas are also gone. To store and fetch db data after a shutdown and again restart
-        #we can use a `named volume`, as depicted below
-        #db-name:<path to data store>
-        volumes:
-        - postgres-db:/var/lib/postgresql/data
-
-    #this global volume refering to the `named volume` above, so that any other container can access the inside this volume
-    volumes:
-    postgres-db:
+    <contents can be foound inside docker-compose.yml file>
 
 - run: `docker-compose up -d` to run the container.
     - -d, --detach Detached mode: Run containers in the background
@@ -160,7 +35,7 @@
 - run: `docker-compose up --build -d`: if you have any changes in the project
     and docker image already existed. Cause `docker-compose` cannot detec change.
     `--build` flag will build images before starting containers
-    - to reflect the development changes instantly, an approach is given below.
+    - to reflect the development changes instantly, (an approach is given below.)
 
 - run: `docker logs <container_id> or <container_name>` to view its log
 - run: `docker ps -a` to List all containers
@@ -215,7 +90,7 @@
     - visit localhost:5050 to connect pgadmin from browser, use credentials from environment to login.
     - put <postgres_service> as host.
 
-- inspect DB instance from Host Machine pgAdmin Desktop app you do not need to build/add above service/container
+- inspect DB instance from Host Machine pgAdmin Desktop app you DO NOT need to build/add above service/container
     but you may need to stop postgres instance running in the Host machine(if any) or else you may got connected to the host machine instance,
     you will be able to use localhost as host in the pgadmin.
 
@@ -257,3 +132,21 @@ clone `docker-compose.yml` file into two different file:
     - thus we will be able to use the docker image
         - just inseatd of:
         - `build .` use `image: sanaullahaq/fastapi-prod`
+
+
+------------------------------------------------------
+|Last but no the least-----points not mentioned above|
+------------------------------------------------------
+- docker-compose/docker-compose-dev/docker-compose-prod contains the multi command `command` directive
+    ```
+    command: >
+      sh -c "./wait-for-it.sh postgres_service:5432 -- alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    ```
+    instead of
+    ```
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ```
+
+    with multi command `command` directive we will be able to wait until the postgres_service container is ready to take connection.
+    It will save us from connection refused error. Also we do not need to create DB tables manually everytime we remove the volume.
+    More detailed comments added in the .yml files.

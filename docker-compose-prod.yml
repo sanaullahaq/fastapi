@@ -8,7 +8,6 @@ services:
     # volumes:
     #   - ./:/usr/src/app:ro
     environment:
-      # - DATABASE_HOSTNAME=${DATABASE_HOSTNAME}
       - DATABASE_HOSTNAME=postgres_service
       - DATABASE_PORT=${DATABASE_PORT}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
@@ -17,9 +16,9 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
-    # command: >
-      # sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-    command: alembic upgrade head
+    # w/o `--reload` flag as do not need to look for changes inside production environment
+    command: >
+      sh -c "./wait-for-it.sh postgres_service:5432 -- alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
     depends_on:
       - postgres_service
 
@@ -29,7 +28,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
-      - POSTGRES_USER = ${DATABASE_USERNAME}
+      - POSTGRES_USER=${DATABASE_USERNAME}
     ports:
       - 5432:5432
     volumes:

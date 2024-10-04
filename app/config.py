@@ -31,8 +31,8 @@ class Settings(BaseSettings):
     #as in the dev server we are not storing the env variables direct in the OS env,
     #rather storing in the .env file, so telling pydantic to import env variables from .env file
     #in the production when pydantic will not find any .env file, pydantic will automatically looking for variables in the OS ENV
-    class Config:
-        env_file = ".env"
+    # class Config:
+    #     env_file = ".env"
 
 
 settings = Settings()
