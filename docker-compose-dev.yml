@@ -56,7 +56,7 @@ services:
 
     # run multi command
     # the depends_on directive will ensure `fastapi_service` container will start after `postgres_service` container.
-    # starting of `postgres_service` container does not make sure our DB is ready to take connection, so we will wait until `postgres_service` is ready to take connection
+    # starting of `postgres_service` container earlier does not make sure our DB is ready to take connection, so we will wait until `postgres_service` is ready to take connection
     # know about `wait-for-it.sh`: https://github.com/vishnubob/wait-for-it. default wait timeout is: 15s
     # `wait-for-it.sh` file need to be existed in the docker image
     # once the `postgres_service` is ready to take connection then the rest cmds will be executed.
