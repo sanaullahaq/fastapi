@@ -8,3 +8,7 @@
 - run: `pytest` with flag `-v` for Increase verbosity. EX: `pytest -v`
 - run: `pytest` with flag `-s` for displaying the print statements inside the test functions.
     EX: `pytest -s`
+
+- to run a specific test, run: `pytest -v -s <path_to_test.py>`. EX: `pytest -v -s .\tests\test_users.py`
+- disbale waringnings with `--disable-warnings` flags
+- exit instantly on first error or failed test with `-x` or  `--exitfirst` flag

@@ -1,5 +1,5 @@
 import pytest
-from app.calculation import add, subtract, multiply, devide, BankAccount
+from app.calculation import add, subtract, multiply, devide, BankAccount, InsufficientFunds
 
 
 # pytest fixture will be called before every test function run,
@@ -64,3 +64,11 @@ def test_bank_transaction(zero_bank_account, deposited, withdrew, balance):
     zero_bank_account.deposit(deposited)
     zero_bank_account.withdraw(withdrew)
     assert zero_bank_account.balance == balance
+
+
+# for the test where exception will be occured, we need to write separate test case
+# and with the `with pytest.raises(<expected_exception>)` we are telling pytest that we expecting an exception
+# and thus if we got the exception our test case will be passed.
+def test_insufficient_funds(bank_account):
+    with pytest.raises(InsufficientFunds):
+        bank_account.withdraw(200)
