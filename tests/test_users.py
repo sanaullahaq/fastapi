@@ -1,50 +1,43 @@
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from app.database import get_db, Base
-from app.main import app
 from app.schemas import *
-from app.config import settings
-from sqlalchemy.orm import sessionmaker
+from .test_db_conn import client, session
+# though we are not using session directly here,
+# but since client is depended on session so we need to import session as well
 
-# fastapi_test DB for testing purpose
-SQLALHEMY_DATABASE_URL = f'postgresql://{settings.database_username}:{settings.database_password}@{
-    settings.database_hostname}:{settings.database_port}/{settings.database_name}_test'
 
-engine = create_engine(SQLALHEMY_DATABASE_URL)
-
-TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# here, we have imported `Base` object directly from the `app.database`,
-# thats why we do not need to put `models.Base...` as in the main.py file
-Base.metadata.create_all(bind=engine)
-
-def override_get_db():
-    db = TestSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-"""
-We have created a Test DB for testing purpose and we are overriding the actual `get_db` depency of our `app` with `override_get_db`
-So that all our testing purpose related queries runs into the test DB
-"""
-app.dependency_overrides[get_db] = override_get_db
-
-client = TestClient(app)
-
-def test_root():
+def test_root(client):
     res = client.get("/")
     print(res.json().get('message'))
     assert res.json().get('message') == 'Hello World!!!'
     assert res.status_code == 200  # default status_code in FastAPI is 200
 
 
-def test_create_user():
+"""
+only passing `/users` here will cause issue in the case of testing.
+in the browser if we send request to `/users` only, FastAPI is as smart as it redirects the requests to `/users/`.
+with status code 307. and after redirect, finallty we got status code 201
+
+but while in the test we captured the status code 307 if we just request to url `/users` rather `/users/`.
+and it causes test failed. so need to be specific here regarding testing
+----------------------------------------------------------------------------------
+| now a days pytest is also as smart as FastAPI, it tooks the final status code, |
+| not the status code where it is redirected from.                               |
+----------------------------------------------------------------------------------
+"""
+def test_create_user(client):
     res = client.post(
-        # passing request body as json data
+        # passing request body-json data with `json`
         "/users/", json={"email": "test1@gmail.com", "password": "12345"})
-    print(res.json())
+    # print(res.json())
     new_user = UserOut(**res.json())
     assert new_user.email == "test1@gmail.com"
     assert res.status_code == 201
+    # print(res.status_code)
+
+def test_login(client):
+    res = client.post(
+        # passing request body-json data with `json`
+        "/users/", json={"email": "test1@gmail.com", "password": "12345"})
+    # passing request body-form data with `data`
+    res = client.post("/login", data={"username": "test1@gmail.com", "password": "12345"})
+    print(res.json())
+    assert res.status_code == 200
