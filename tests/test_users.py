@@ -44,7 +44,9 @@ so test_login() will be failed. we can approach 3ways.
     above `test_create_user()` also the test will be failed.
     So in summary this is not a good practice. A test case should not depended on another test case.
     More about fixture: https://docs.pytest.org/en/6.2.x/fixture.html#:~:text=requesting%20it%0A%20%20%20%20...-,Fixture%20scopes%C2%B6,-Fixtures%20are%20created
-1- explicitly create an user inside test_login() and apply `login` on that user.
+2- explicitly create an user inside test_login() and apply `login` on that user. This is a better approach then explained in step 1
+3- *most convenient approach*
+We will define another fixture what will return a test user
 """
 
 
