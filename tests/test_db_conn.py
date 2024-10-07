@@ -15,7 +15,8 @@ engine = create_engine(SQLALHEMY_DATABASE_URL)
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-@pytest.fixture(scope='module')
+# @pytest.fixture(scope='module')
+@pytest.fixture
 def session():
     # here, we have imported `Base` object directly from the `app.database`,
     # thats why we do not need to put `models.Base...` as in the main.py file
@@ -33,7 +34,8 @@ def session():
 
 
 # fixture depended on fixture
-@pytest.fixture(scope='module')
+# @pytest.fixture(scope='module')
+@pytest.fixture
 def client(session):
     def override_get_db():
         try:
