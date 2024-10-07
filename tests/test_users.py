@@ -34,9 +34,7 @@ def test_create_user(client):
     # print(res.status_code)
 
 def test_login(client):
-    res = client.post(
-        # passing request body-json data with `json`
-        "/users/", json={"email": "test1@gmail.com", "password": "12345"})
+    # res = client.post("/users/", json={"email": "test1@gmail.com", "password": "12345"})
     # passing request body-form data with `data`
     res = client.post("/login", data={"username": "test1@gmail.com", "password": "12345"})
     print(res.json())
