@@ -51,7 +51,7 @@ We will use this fixture whenever we need a test user.
 """
 
 
-def test_login(client):
+def test_login(test_user, client):
     # res = client.post("/users/", json={"email": "test1@gmail.com", "password": "12345"})
     # passing request body-form data with `data`
     res = client.post("/login", data={"username": "test1@gmail.com", "password": "12345"})
