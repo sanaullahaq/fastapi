@@ -1,14 +1,28 @@
+import pytest
 from app.schemas import *
 from .test_db_conn import client, session
 # though we are not using session directly here,
 # but since client is depended on session so we need to import session as well
 
 
-def test_root(client):
-    res = client.get("/")
-    print(res.json().get('message'))
-    assert res.json().get('message') == 'Hello World!!!'
-    assert res.status_code == 200  # default status_code in FastAPI is 200
+@pytest.fixture
+def test_user(client):
+    user_data = {"email": "sanau@xyz.com", "password": "12345"}
+    # passing request body-json data with `json`
+    res = client.post("/users/", json=user_data)
+    assert res.status_code==201
+    # print(res.json())
+    new_user = res.json()
+    new_user["password"] = user_data["password"]
+    return new_user
+
+
+
+# def test_root(client):
+#     res = client.get("/")
+#     print(res.json().get('message'))
+#     assert res.json().get('message') == 'Hello World!!!'
+#     assert res.status_code == 200  # default status_code in FastAPI is 200
 
 
 """
@@ -46,14 +60,12 @@ so test_login() will be failed. we can approach 3ways.
     More about fixture: https://docs.pytest.org/en/6.2.x/fixture.html#:~:text=requesting%20it%0A%20%20%20%20...-,Fixture%20scopes%C2%B6,-Fixtures%20are%20created
 2- explicitly create an user inside test_login() and apply `login` on that user. This is a better approach then explained in step 1
 3- *most convenient approach*
-We will define another fixture what will return a test user. And we will try to login with the test user.
-We will use this fixture whenever we need a test user.
+    We will define another fixture what will return a test user. And we will try to login with the test user.
+    We will use this fixture whenever we need a test user.
 """
-
-
 def test_login(test_user, client):
     # res = client.post("/users/", json={"email": "test1@gmail.com", "password": "12345"})
     # passing request body-form data with `data`
-    res = client.post("/login", data={"username": "test1@gmail.com", "password": "12345"})
-    print(res.json())
+    res = client.post("/login", data={"username": test_user["email"], "password": test_user["password"]})
+    # print(res.json())
     assert res.status_code == 200
