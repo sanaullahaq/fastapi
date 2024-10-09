@@ -11,7 +11,6 @@ inside the subpackage
 """
 
 
-
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from app.database import get_db, Base
@@ -19,6 +18,8 @@ from app.main import app
 from app.config import settings
 from sqlalchemy.orm import sessionmaker
 import pytest
+
+from app.oauth2 import create_access_token
 
 # fastapi_test DB for testing purpose
 SQLALHEMY_DATABASE_URL = f'postgresql://{settings.database_username}:{settings.database_password}@{
@@ -79,3 +80,22 @@ def test_user(client):
     new_user = res.json()
     new_user["password"] = user_data["password"]
     return new_user
+
+
+@pytest.fixture
+def token(test_user):
+    return create_access_token({"user_id": test_user["id"]})
+
+
+# creating token with user id, what is same as what token we get back after login.
+# and then authorizing the client with token.
+# sending the token data in the header of the request.
+@pytest.fixture
+def authorized_client(client, token):
+    print(f"client.headers: {client.headers}")
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {token}"
+    }
+    print(f"client.headers: {client.headers}")
+    return client

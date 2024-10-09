@@ -1,6 +1,6 @@
 from jose import jwt
 from app.config import settings
-# import pytest
+import pytest
 from app import schemas
 # from .test_db_conn import client, session
 # though we are not using session directly here,
@@ -19,7 +19,6 @@ from app import schemas
 #     return new_user
 
 
-
 # def test_root(client):
 #     res = client.get("/")
 #     print(res.json().get('message'))
@@ -36,7 +35,7 @@ but while in the test we captured the status code 307 if we just request to url 
 and it causes test failed. so need to be specific here regarding testing
 ----------------------------------------------------------------------------------
 | now a days pytest is also as smart as FastAPI, it tooks the final status code, |
-| not the status code where it is redirected from.                               |
+| not the status code from where it is has been redirected .                     |
 ----------------------------------------------------------------------------------
 """
 def test_create_user(client):
@@ -72,7 +71,21 @@ def test_login_user(test_user, client):
     login_res = schemas.Token(**res.json())
 
     payload = jwt.decode(login_res.access_token, settings.secret_key, algorithms=settings.algorithm)
-    
     assert test_user['id'] == payload.get('user_id')
     assert login_res.token_type == 'bearer'
     assert res.status_code == 200
+
+
+
+@pytest.mark.parametrize("email, password, status_code", [
+    ("wrongemail@xyz.com", "12345", 403),
+    ("test1@gmail.com", "wrongpassword", 403),
+    ("wrongemail@xyz.com", "wrongpassword", 403),
+    (None, "12345", 422),
+    ("test1@gmail.com", None, 422)
+])
+# status_code 422 - > schema validation error
+def test_incorrect_login(test_user, client, email, password, status_code):
+    res = client.post("/login", data={"username": email, "password": password})
+    assert res.status_code == status_code
+    # assert res.json()["detail"] == "Invalid Credentials"
