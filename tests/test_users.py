@@ -1,20 +1,22 @@
-import pytest
-from app.schemas import *
-from .test_db_conn import client, session
+from jose import jwt
+from app.config import settings
+# import pytest
+from app import schemas
+# from .test_db_conn import client, session
 # though we are not using session directly here,
 # but since client is depended on session so we need to import session as well
 
 
-@pytest.fixture
-def test_user(client):
-    user_data = {"email": "sanau@xyz.com", "password": "12345"}
-    # passing request body-json data with `json`
-    res = client.post("/users/", json=user_data)
-    assert res.status_code==201
-    # print(res.json())
-    new_user = res.json()
-    new_user["password"] = user_data["password"]
-    return new_user
+# @pytest.fixture
+# def test_user(client):
+#     user_data = {"email": "sanau@xyz.com", "password": "12345"}
+#     # passing request body-json data with `json`
+#     res = client.post("/users/", json=user_data)
+#     assert res.status_code==201
+#     # print(res.json())
+#     new_user = res.json()
+#     new_user["password"] = user_data["password"]
+#     return new_user
 
 
 
@@ -42,7 +44,7 @@ def test_create_user(client):
         # passing request body-json data with `json`
         "/users/", json={"email": "test1@gmail.com", "password": "12345"})
     # print(res.json())
-    new_user = UserOut(**res.json())
+    new_user = schemas.UserOut(**res.json())
     assert new_user.email == "test1@gmail.com"
     assert res.status_code == 201
     # print(res.status_code)
@@ -63,9 +65,14 @@ so test_login() will be failed. we can approach 3ways.
     We will define another fixture what will return a test user. And we will try to login with the test user.
     We will use this fixture whenever we need a test user.
 """
-def test_login(test_user, client):
+def test_login_user(test_user, client):
     # res = client.post("/users/", json={"email": "test1@gmail.com", "password": "12345"})
     # passing request body-form data with `data`
     res = client.post("/login", data={"username": test_user["email"], "password": test_user["password"]})
-    # print(res.json())
+    login_res = schemas.Token(**res.json())
+
+    payload = jwt.decode(login_res.access_token, settings.secret_key, algorithms=settings.algorithm)
+    
+    assert test_user['id'] == payload.get('user_id')
+    assert login_res.token_type == 'bearer'
     assert res.status_code == 200
