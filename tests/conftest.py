@@ -20,6 +20,7 @@ from sqlalchemy.orm import sessionmaker
 import pytest
 
 from app.oauth2 import create_access_token
+from app import models
 
 # fastapi_test DB for testing purpose
 SQLALHEMY_DATABASE_URL = f'postgresql://{settings.database_username}:{settings.database_password}@{
@@ -81,6 +82,15 @@ def test_user(client):
     new_user["password"] = user_data["password"]
     return new_user
 
+@pytest.fixture
+def test_user2(client):
+    user_data = {'email': 'sultana@abc.com', 'password': '12345'}
+    res = client.post('/users/', json=user_data)
+    assert res.status_code == 201
+    new_user = res.json()
+    new_user['password'] = user_data['password']
+    return new_user
+
 
 @pytest.fixture
 def token(test_user):
@@ -92,10 +102,58 @@ def token(test_user):
 # sending the token data in the header of the request.
 @pytest.fixture
 def authorized_client(client, token):
-    print(f"client.headers: {client.headers}")
+    # print(f"client.headers: {client.headers}")
     client.headers = {
         **client.headers,
         "Authorization": f"Bearer {token}"
     }
-    print(f"client.headers: {client.headers}")
+    # print(f"client.headers: {client.headers}")
     return client
+
+
+@pytest.fixture
+def test_posts(test_user, session, test_user2):
+    posts_data = [
+        {
+            'title': "Post Title 1",
+            'content': "Post Content 1",
+            'owner_id': test_user['id']
+        },{
+            'title': "Post Title 2",
+            'content': "Post Content 2",
+            'owner_id': test_user2['id']
+        },{
+            'title': "Post Title 3",
+            'content': "Post Content 3",
+            'owner_id': test_user['id']
+        },{
+            'title': "Post Title 4",
+            'content': "Post Content 4",
+            'owner_id': test_user2['id']
+        },{
+            'title': "Post Title 5",
+            'content': "Post Content 5",
+            'owner_id': test_user['id']
+        },{
+            'title': "Post Title 6",
+            'content': "Post Content 6",
+            'owner_id': test_user2['id']
+        },{
+            'title': "Post Title 7",
+            'content': "Post Content 7",
+            'owner_id': test_user['id']
+        }
+    ]
+
+    def create_post_model(post):
+        return models.Post(**post)
+    posts = list(map(create_post_model, posts_data))
+    
+    session.add_all(posts)
+    # session.add_all([
+    #     models.Post(title="Post Title 1", content="Post Content 1", owner_id=test_user['id']),
+    #     models.Post(title="Post Title 2", content="Post Content 2", owner_id=test_user2['id'])
+    #     ])
+    session.commit()
+    posts = session.query(models.Post).all()
+    return posts
