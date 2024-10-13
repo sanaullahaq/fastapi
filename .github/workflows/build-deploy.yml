@@ -59,4 +59,4 @@ jobs:  # Define the jobs to be executed
       - name: test with pytest  # Step to run tests with pytest
         run: |  # run multiple commands in a single run step
           pip install pytest  # Command to install pytest
-          pytest  # Command to run tests using pytest
+          pytest --disable-warnings -v -s  # Command to run tests using pytest
