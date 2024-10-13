@@ -1,13 +1,23 @@
-name: Build and Deploy Code
-on:
-    - push
-    - pull_request
+name: Build and Deploy Code  # Name of the workflow
 
-jobs:
-    job1:
-        runs-on: ubuntu-latest
-        steps:
-            - name: pulling git repo
-              uses: actions/checkout@v4
-            - name: say hi to sanu
-              run: echo "hey sanu"
+on:  # Triggers for the workflow
+    - push  # Trigger on push to the repository
+    - pull_request  # Trigger on pull request events
+
+jobs:  # Define the jobs to be executed
+    job1:  # Job identifier
+        runs-on: ubuntu-latest  # Specify the environment to run the job
+        steps:  # Define the steps for the job
+            - name: pulling git repo  # Step to check out the repository
+              uses: actions/checkout@v4  # Use the checkout action to pull the code
+
+            - name: install Python
+              uses: actions/setup-python@v5
+              with:
+                python-version: "3.12"
+
+            - name: update pip
+              run: python -m pip install --upgrade pip
+
+            - name: install dependencies
+              run: pip install -r req.txt
