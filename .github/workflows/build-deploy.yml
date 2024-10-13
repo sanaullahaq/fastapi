@@ -16,6 +16,9 @@ jobs:  # Define the jobs to be executed
               with:
                 python-version: "3.12"
 
+            - name: check installed python version
+              run: python --version
+
             - name: update pip
               run: python -m pip install --upgrade pip
 
