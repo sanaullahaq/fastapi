@@ -24,3 +24,8 @@ jobs:  # Define the jobs to be executed
 
             - name: install dependencies
               run: pip install -r req.txt
+
+            - name: test with pytest
+              run: |  # run multiple cmd's on a single run
+                pip install pytest
+                pytest
