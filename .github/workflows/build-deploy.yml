@@ -1,14 +1,14 @@
 name: Build and Deploy Code  # Name of the workflow
 
 on:  # Triggers for the workflow
-    - push  # Trigger on push to the repository
-    - pull_request  # Trigger on pull request events
+  push:  # Trigger the workflow on push to the repository
+  pull_request:  # Trigger the workflow on pull request events
 
 jobs:  # Define the jobs to be executed
   job1:  # Job identifier
     environment:
-      name: testing
-    env:
+      name: testing  # Environment name for this job
+    env:  # Environment secrets/variables, populated from GitHub secrets
       DATABASE_HOSTNAME: ${{secrets.DATABASE_HOSTNAME}}
       DATABASE_PORT: ${{secrets.DATABASE_PORT}}
       DATABASE_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
@@ -17,27 +17,46 @@ jobs:  # Define the jobs to be executed
       SECRET_KEY: ${{secrets.SECRET_KEY}}
       ALGORITHM: ${{secrets.ALGORITHM}}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
-      
-    runs-on: ubuntu-latest  # Specify the environment to run the job
+
+    # Service containers to run with `job1`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
+          POSTGRES_DB: ${{secrets.DATABASE_NAME}}_test
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    runs-on: ubuntu-latest  # Specify the OS to run the job
     steps:  # Define the steps for the job
       - name: pulling git repo  # Step to check out the repository
-        uses: actions/checkout@v4  # Use the checkout action to pull the code
+        uses: actions/checkout@v4  # Use the checkout action to pull the code - as this is a common task, already available in the github actions marketplace
 
-      - name: install Python
-        uses: actions/setup-python@v5
+      - name: install Python  # Step to set up Python
+        uses: actions/setup-python@v5  # Use the setup-python action - as this is a common task, already available in the github actions marketplace
         with:
-          python-version: "3.12"
+          python-version: "3.12"  # Specify the Python version to use
 
-      - name: check installed python version
-        run: python --version
+      - name: check installed python version  # Step to check the installed Python version
+        run: python --version  # Command to print the Python version
 
-      - name: update pip
-        run: python -m pip install --upgrade pip
+      - name: update pip  # Step to update pip to the latest version
+        run: python -m pip install --upgrade pip  # Command to upgrade pip
 
-      - name: install dependencies
-        run: pip install -r req.txt
+      - name: install dependencies  # Step to install dependencies
+        run: pip install -r req.txt  # Command to install dependencies from the requirements file
 
-      - name: test with pytest
-        run: |  # run multiple cmd's on a single run
-          pip install pytest
-          pytest
+      - name: test with pytest  # Step to run tests with pytest
+        run: |  # run multiple commands in a single run step
+          pip install pytest  # Command to install pytest
+          pytest  # Command to run tests using pytest
