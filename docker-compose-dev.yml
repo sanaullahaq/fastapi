@@ -63,7 +63,7 @@ services:
     # It will save us from connection refused error. Also we do not need to create DB tables manually everytime we remove the volume.
     # connection refused error occurs when our DB is not ready to take conneciton but we are trying to create DB tables with alembic
     command: >
-      sh -c "./wait-for-it.sh postgres_service:5432 -- alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+      sh -c "chmod +x wait-for-it.sh -- ./wait-for-it.sh postgres_service:5432 -- alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     #This service will start after <postgres_service>
     depends_on:
       - postgres_service

@@ -1,0 +1,6 @@
+GitHub Actions is a continuous integration and continuous delivery (CI/CD) platform
+that allows you to automate your build, test, and deployment pipeline directly from your github repository.
+--------------------------------------------------------------------------------------------------------------
+| Just open the `.github\workflows\build-deploy.yml` file everything is perfectly depicted and defined there.|
+| Just create the necessary environments in the github repo and add required secrets.                        |
+---------------------------------------------------------------------------------------------------------------
